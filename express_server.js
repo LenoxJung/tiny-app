@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 
-var urlDatabase = {
-  "b2xVn2": "http://http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com",
 };
 
 app.get("/", (req, res) => {
@@ -42,7 +42,14 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  res.send("Ok");
+  var randomString = generateRandomString();
+  urlDatabase[randomString] = req.body.longURL
+  res.redirect(`/urls/${randomString}`);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 })
 
 app.listen(PORT, () => {
