@@ -13,7 +13,7 @@
   <h2>My URLs</h2>
   <ul>
     <% for (var url in urls) { %>
-      <li><%= url %>: <%= urls[url] %></li>
+      <form method="POST" action="/urls/<%= url %>/delete"<li><%= url %>: <%= urls[url] %> <button type="submit" class="btn btn-primary">Delete</button></li></form>
     <% }%>
   </ul>
 </body>
