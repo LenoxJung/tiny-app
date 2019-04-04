@@ -9,11 +9,11 @@
 </head>
 <body style="font-size:20px; padding:50px;">
   <% include partials/_header %>
-  <a href='urls/new'>Create new TinyURL</a>
+  <a href='/urls/new'>Create new TinyURL</a>
   <h2>My URLs</h2>
   <ul>
     <% for (var url in urls) { %>
-      <form method="POST" action="/urls/<%= url %>/delete"><li><%= url %>: <%= urls[url] %> <button type="submit" class="btn btn-primary">Delete</button></li></form>
+      <form method="POST" action="/urls/<%= url %>/delete"><li><%= url %>: <a href="<%= urls[url] %>"><%= urls[url] %></a> <a href="<%= url %>">Edit</a> <button>Delete</button></li></form>
     <% }%>
   </ul>
 </body>
