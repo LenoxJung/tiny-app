@@ -8,9 +8,10 @@
   <title>TinyApp</title>
 </head>
 <body style="font-size:20px; padding:50px;">
-  <% include partials/_header %>
+  <!-- <% include partials/_header %>
   <a href='urls/new'>Create new TinyURL</a>
-  <h2>TinyURL for <%= longURL %></h2>
-  <%= shortURL %>
+  <h2>TinyURL for <%= longURL %></h2> -->
+  <h2>ShortURL: <%= shortURL %></h2>
+  <input value="<%= longURL %>" style="width: 300px">
 </body>
 </html>
