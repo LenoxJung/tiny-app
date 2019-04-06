@@ -13,6 +13,19 @@ const urlDatabase = {
   "9sm5xB": "http://www.google.com"
 };
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -27,13 +40,27 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("users_new", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  if (!req.body.email || !req.body.password) res.send("Response Status Code: 400");
+  if (emailCheck(req.body.email)) res.send("Response Status Code: 400");
+  let id = generateRandomString();
+  users[id] = { id: id, email: req.body.email, password: req.body.password };
+  res.cookie("user_id", users[id].id);
+  res.redirect("/urls");
+})
+
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  let templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] };
+  let templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -44,7 +71,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 });
 
@@ -64,15 +91,23 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = { user: users[req.cookies["user_id"]] };
+  res.render("login", templateVars);
+})
+
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
+  let user = emailCheck(req.body.email);
+  if (!user) res.send("Response Status Code: 403");
+  if (req.body.password != user.password) res.send("Response Status Code: 403");
+  res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
-})
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -85,4 +120,10 @@ const generateRandomString = () => {
     randomString += alphaNumeric[Math.floor(Math.random() * alphaNumeric.length)];
   }
   return randomString
+}
+
+const emailCheck = (email) => {
+  for (var user in users) {
+    if (users[user].email == email) return users[user];
+  }
 }

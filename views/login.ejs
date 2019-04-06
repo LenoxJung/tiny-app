@@ -9,12 +9,14 @@
   </head>
   <body style="font-size:20px; padding:50px;">
     <% include partials/_header %>
-    <a href='/urls/new'>Create new TinyURL</a>
-    <h2>TinyURL for <%= longURL %></h2>
-    <h2>ShortURL: <%= shortURL %></h2>
-    <form action="/urls/<%= shortURL %>" method="POST">
-      <input class="form-control" name="longURL" value="<%= longURL %>" style="width: 300px">
-      <button>Update</button>
+    <form method="POST" action="/login">
+      <h2>Login</h2>
+      Email:
+      <input name="email" class="form-control" style="width: 300px">
+      Password:
+      <input name="password" class="form-control" style="width: 300px">
+      <br>
+      <button class="btn btn-primary">Login</button>
     </form>
   </body>
 </html>

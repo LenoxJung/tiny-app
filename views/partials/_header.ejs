@@ -1,12 +1,28 @@
-<h1>TinyApp</h1>
-<% if (username) { %>
-  <form action="/logout" method="POST">Logged In As: <%= username %>
-    <br>
-    <button class="btn btn-primary">Logout</button>
-  </form>
-<% } else { %>
-  <form action="/login" method="POST">
-    <input class="form-control" name="username" style="width: 300px">
-    <button class="btn btn-primary">Login</button>
-  </form>
-<% }%>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <title>TinyApp</title>
+  </head>
+  <body style="font-size:20px; padding:50px;">
+    <h1>TinyApp</h1>
+    <% if (user) { %>
+      <a href=/urls>URLs</a> | <a href=/urls/new>Create New TinyURL</a>
+      <form action="/logout" method="POST">Logged In As: <%= user.email %>
+        <br>
+        <button class="btn btn-primary">Logout</button>
+      </form>
+    <% } else { %>
+      <!-- <form action="/login" method="POST">
+        <input class="form-control" name="username" style="width: 300px">
+        <br>
+        <button class="btn btn-primary">Login</button>
+      </form> -->
+      <a href="/login">Login</a> | <a href="/register">Register</a>
+      <br>
+    <% }%>
+  </body>
+</html>
