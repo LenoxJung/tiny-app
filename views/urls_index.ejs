@@ -16,7 +16,7 @@
         <form method="POST" action="/urls/<%= url %>/delete">
           <li>
             <%= url %>:
-            <a href="<%= urls[url] %>"><%= urls[url] %></a>
+            <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
             <a href="/urls/<%= url %>">Edit</a>
             <button>Delete</button>
           </li>
