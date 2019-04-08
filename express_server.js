@@ -1,5 +1,6 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
@@ -7,7 +8,10 @@ const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(cookieSession({
+  secret: "some-long-secret"
+}));
 
 const urlDatabase = {
   "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "userRandomID" },
@@ -44,7 +48,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session["user_id"]] };
   res.render("users_new", templateVars);
 });
 
@@ -55,13 +59,14 @@ app.post("/register", (req, res) => {
     const id = generateRandomString();
     const password = bcrypt.hashSync(req.body.password, 10);
     users[id] = { id: id, email: req.body.email, password: password };
-    res.cookie("user_id", users[id].id);
+    // res.cookie("user_id", users[id].id);
+    req.session["user_id"] = users[id].id
     res.redirect("/urls");
   }
 })
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
   else {
     const urls = urlsForUser(userID);
@@ -71,7 +76,7 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.redirect("/login");
   else {
     const templateVars = { user: users[userID] };
@@ -80,7 +85,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
   else if (!urlsForUser(userID)[req.params.id]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
@@ -91,7 +96,7 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
   else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
@@ -101,7 +106,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
   else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
@@ -111,7 +116,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  const userID = req.cookies["user_id"];
+  const userID = req.session["user_id"];
   if (!userID) res.redirect("/login");
   else {
     const randomString = generateRandomString();
@@ -126,7 +131,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
+  const templateVars = { user: users[req.session["user_id"]] };
   res.render("login", templateVars);
 })
 
@@ -135,13 +140,14 @@ app.post("/login", (req, res) => {
   if (!user) res.send("Response Status Code: 403");
   else if (!bcrypt.compareSync(req.body.password, user.password)) res.send("Response Status Code: 403");
   else {
-    res.cookie("user_id", user.id);
+    // res.cookie("user_id", user.id);
+    req.session["user_id"] = user.id;
     res.redirect("/urls");
   }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
