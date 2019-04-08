@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 //app.use(cookieParser());
 app.use(cookieSession({
-  secret: "some-long-secret"
+  keys: ['key1', 'key2']
 }));
 
 const urlDatabase = {
@@ -67,7 +67,7 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
+  if (!userID) res.render("partials/_header", { user: null });
   else {
     const urls = urlsForUser(userID);
     const templateVars = { urls: urls, user: users[userID] };
@@ -86,7 +86,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
+  if (!userID) res.render("partials/_header", { user: null });
   else if (!urlsForUser(userID)[req.params.id]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
     urlDatabase[req.params.id].longURL = req.body.longURL;
@@ -97,7 +97,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
+  if (!userID) res.render("partials/_header", { user: null });
   else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[userID] };
@@ -107,7 +107,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.send("<a href=/login>Login</a> | <a href=/register>Register</a>");
+  if (!userID) res.render("partials/_header", { user: null });
   else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
   else {
     delete urlDatabase[req.params.shortURL];
