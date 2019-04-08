@@ -13,7 +13,7 @@
     <h2>TinyURL for <%= longURL %></h2>
     <h2>ShortURL: <%= shortURL %></h2>
     <form action="/urls/<%= shortURL %>" method="POST">
-      <input class="form-control" name="longURL" value="<%= longURL %>" style="width: 300px">
+      <input class="form-control" name="longURL" type="text" value="<%= longURL %>" style="width: 300px">
       <button>Update</button>
     </form>
   </body>
