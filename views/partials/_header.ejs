@@ -8,8 +8,12 @@
     <title>TinyApp</title>
   </head>
   <body style="font-size:20px; padding:50px;">
+    <% if(typeof message != "undefined") {%>
+      <%= message %>
+    <% }%>
+    <br>
     <h1>TinyApp</h1>
-    <% if (user) { %>
+    <% if (typeof user != "undefined") { %>
       <a href=/urls>URLs</a> | <a href=/urls/new>Create New TinyURL</a>
       <form action="/logout" method="POST">Logged In As: <%= user.email %>
         <br>

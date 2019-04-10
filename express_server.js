@@ -48,13 +48,11 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.session["user_id"]] };
-  res.render("users_new", templateVars);
+  res.render("users_new");
 });
 
 app.post("/register", (req, res) => {
-  if (!req.body.email || !req.body.password) res.send("Response Status Code: 400");
-  else if (emailCheck(req.body.email)) res.send("Response Status Code: 400");
+  if (!req.body.email || !req.body.password || emailCheck(req.body.email)) res.status(400).render("users_new", { message: "400 That email address is already in use or email and password cannot be blank." });
   else {
     const id = generateRandomString();
     const password = bcrypt.hashSync(req.body.password, 10);
@@ -67,7 +65,7 @@ app.post("/register", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.render("partials/_header", { user: null });
+  if (!userID) res.render("partials/_header");
   else {
     const urls = urlsForUser(userID);
     const templateVars = { urls: urls, user: users[userID] };
@@ -86,8 +84,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.render("partials/_header", { user: null });
-  else if (!urlsForUser(userID)[req.params.id]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
+  if (!userID || !urlsForUser(userID)[req.params.id]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
   else {
     urlDatabase[req.params.id].longURL = req.body.longURL;
     res.redirect(`/urls/${req.params.id}`);
@@ -97,8 +94,7 @@ app.post("/urls/:id", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.render("partials/_header", { user: null });
-  else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
+  if (!userID || !urlsForUser(userID)[req.params.shortURL]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
   else {
     const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[userID] };
     res.render("urls_show", templateVars);
@@ -107,8 +103,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session["user_id"];
-  if (!userID) res.render("partials/_header", { user: null });
-  else if (!urlsForUser(userID)[req.params.shortURL]) res.send("THIS EITHER DOESN'T EXIST OR IT DOESN'T BELONG TO U");
+  if (!userID || !urlsForUser(userID)[req.params.shortURL]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
   else {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
@@ -131,14 +126,12 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.session["user_id"]] };
-  res.render("login", templateVars);
+  res.render("sessions_new");
 })
 
 app.post("/login", (req, res) => {
   const user = emailCheck(req.body.email);
-  if (!user) res.send("Response Status Code: 403");
-  else if (!bcrypt.compareSync(req.body.password, user.password)) res.send("Response Status Code: 403");
+  if (!user || !bcrypt.compareSync(req.body.password, user.password)) res.status(403).render("sessions_new", { message: "403 User doesn't exist or The password you've entered is incorrect." });
   else {
     // res.cookie("user_id", user.id);
     req.session["user_id"] = user.id;
@@ -149,6 +142,10 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
+});
+
+app.use((req, res) => {
+  res.status(404).send("404 This is not the web page you are looking for.")
 });
 
 app.listen(PORT, () => {
