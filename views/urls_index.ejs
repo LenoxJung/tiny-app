@@ -13,7 +13,7 @@
     <h2>My URLs</h2>
     <ul>
       <% for (var url in urls) { %>
-        <form method="POST" action="/urls/<%= url %>/delete">
+        <form method="POST" action="/urls/<%= url %>?_method=DELETE">
           <li>
             <%= url %>:
             <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>

@@ -1,11 +1,13 @@
 const express = require('express');
 //const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 
+app.use(methodOverride('_method'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 //app.use(cookieParser());
@@ -82,7 +84,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
-app.post("/urls/:id", (req, res) => {
+app.put("/urls/:id", (req, res) => {
   const userID = req.session["user_id"];
   if (!userID || !urlsForUser(userID)[req.params.id]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
   else {
@@ -101,7 +103,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const userID = req.session["user_id"];
   if (!userID || !urlsForUser(userID)[req.params.shortURL]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
   else {
