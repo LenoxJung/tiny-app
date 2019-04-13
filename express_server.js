@@ -12,14 +12,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 //app.use(cookieParser());
 app.use(cookieSession({
-  keys: ['key1', 'key2']
+  keys: ['key1']
 }));
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "userRandomID" },
-  "9sm5xB": { longURL: "https://www.google.com", userID: "user2RandomID" },
-  "b6UTxQ": { longURL: "https://www.tsn.ca", userID: "user2RandomID" },
-  "i3BoGr": { longURL: "https://www.google.ca", userID: "userRandomID" }
+  "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "userRandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
+  "9sm5xB": { longURL: "https://www.google.com", userID: "user2RandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
+  "b6UTxQ": { longURL: "https://www.tsn.ca", userID: "user2RandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
+  "i3BoGr": { longURL: "https://www.google.ca", userID: "userRandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 }
 };
 
 const users = {
@@ -36,7 +36,9 @@ const users = {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  //res.send("Hello!");
+  if (users[req.session["user_id"]]) res.redirect("/urls");
+  else res.redirect("/login")
 });
 
 app.get("/urls.json", (req, res) => {
@@ -50,7 +52,8 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render("users_new");
+  if (users[req.session["user_id"]]) res.redirect("/urls");
+  else res.render("users_new");
 });
 
 app.post("/register", (req, res) => {
@@ -63,73 +66,12 @@ app.post("/register", (req, res) => {
     req.session["user_id"] = users[id].id
     res.redirect("/urls");
   }
-})
-
-app.get("/urls", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID) res.render("partials/_header");
-  else {
-    const urls = urlsForUser(userID);
-    const templateVars = { urls: urls, user: users[userID] };
-    res.render("urls_index", templateVars);
-  }
-});
-
-app.get("/urls/new", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID) res.redirect("/login");
-  else {
-    const templateVars = { user: users[userID] };
-    res.render("urls_new", templateVars);
-  }
-});
-
-app.put("/urls/:id", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID || !urlsForUser(userID)[req.params.id]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
-  else {
-    urlDatabase[req.params.id].longURL = req.body.longURL;
-    res.redirect(`/urls/${req.params.id}`);
-    //res.redirect("/urls");
-  }
-});
-
-app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID || !urlsForUser(userID)[req.params.shortURL]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
-  else {
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: users[userID] };
-    res.render("urls_show", templateVars);
-  }
-});
-
-app.delete("/urls/:shortURL", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID || !urlsForUser(userID)[req.params.shortURL]) res.status(403).render("partials/_header", { message: "403 Forbidden." });
-  else {
-    delete urlDatabase[req.params.shortURL];
-    res.redirect("/urls");
-  }
-});
-
-app.post("/urls", (req, res) => {
-  const userID = req.session["user_id"];
-  if (!userID) res.redirect("/login");
-  else {
-    const randomString = generateRandomString();
-    urlDatabase[randomString] = { longURL: req.body.longURL, userID: userID };
-    res.redirect(`/urls/${randomString}`);
-  }
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
 });
 
 app.get("/login", (req, res) => {
-  res.render("sessions_new");
-})
+  if (users[req.session["user_id"]]) res.redirect("/urls");
+  else res.render("sessions_new");
+});
 
 app.post("/login", (req, res) => {
   const user = emailCheck(req.body.email);
@@ -146,8 +88,92 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/urls", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!user) res.status(403).render("sessions_new", { message: "403 Please login to see this link."});
+  else {
+    const urls = urlsForUser(user.id);
+    const templateVars = { urls: urls, user: user };
+    res.render("urls_index", templateVars);
+  }
+});
+
+app.get("/urls/new", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!user) res.redirect("/login");
+  else {
+    const templateVars = { user: user };
+    res.render("urls_new", templateVars);
+  }
+});
+
+app.post("/urls", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!user) res.status(403).render("sessions_new", { message: "403 Forbidden" });
+  else {
+    const randomString = generateRandomString();
+    urlDatabase[randomString] = { longURL: req.body.longURL, userID: user.id, created: Date.now(), visitors: { Anonymous: [] }, visits: 0 };
+    res.redirect(`/urls/${randomString}`);
+  }
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!urlDatabase[req.params.shortURL]) {
+    if (user) res.status(404).render("urls_index", { urls: urlsForUser(user.id), user: user, message: "404 Not Found." });
+    else res.status(404).render("sessions_new", { message: "404 Not Found."});
+  }
+  else if (!user) res.status(403).render("sessions_new", { message: "403 Forbidden." });
+  else if (!urlsForUser(user.id)[req.params.shortURL]) res.status(403).render("urls_index", { urls: urlsForUser(user.id), user: user, message: "403 Forbidden." });
+  else {
+    const templateVars = { shortURL: req.params.shortURL, url: urlDatabase[req.params.shortURL], user: user };
+    res.render("urls_show", templateVars);
+  }
+});
+
+app.put("/urls/:id", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!urlDatabase[req.params.id]) res.status(404).send("404 Not Found.");
+  else if (!user) res.status(403).render("sessions_new", { message: "403 Forbidden" });
+  else if (!urlsForUser(user.id)[req.params.id]) res.status(403).send("403 Forbidden.");
+  else {
+    urlDatabase[req.params.id].longURL = req.body.longURL;
+    urlDatabase[req.params.id].visits = 0;
+    urlDatabase[req.params.id].visitors = { Anonymous: [] };
+    urlDatabase[req.params.id].created = Date.now();
+    //res.redirect(`/urls/${req.params.id}`);
+    res.redirect("/urls");
+  }
+});
+
+app.delete("/urls/:shortURL", (req, res) => {
+  const user = users[req.session["user_id"]];
+  if (!urlDatabase[req.params.shortURL]) res.status(404).send("404 Not Found.");
+  else if (!user) res.status(403).render("sessions_new", { message: "403 Forbidden" });
+  else if (!urlsForUser(user.id)[req.params.shortURL]) res.status(403).send("403 Forbidden.");
+  else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const url = urlDatabase[req.params.shortURL];
+  const user = users[req.session["user_id"]];
+  let userID = "Anonymous";
+  if (user) userID = user.id;
+  if (url) {
+    url.visits++;
+    if (!url.visitors[userID]) url.visitors[userID] = [];
+    url.visitors[userID].push(Date.now());
+    res.redirect(url.longURL);
+  }
+  else if (user) res.status(404).render("urls_index", { urls: urlsForUser(user.id), user: user, message: "404 Not Found."});
+  else res.render("partials/_header", { message: "404 Not Found" });
+});
+
 app.use((req, res) => {
-  res.status(404).send("404 This is not the web page you are looking for.")
+  res.status(404).render("partials/_header", { user: users[req.session["user_id"]], message: "404 This is not the web page you are looking for." });
 });
 
 app.listen(PORT, () => {

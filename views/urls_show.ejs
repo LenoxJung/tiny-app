@@ -10,11 +10,23 @@
   <body style="font-size:20px; padding:50px;">
     <% include partials/_header %>
     <a href='/urls/new'>Create new TinyURL</a>
-    <h2>TinyURL for <%= longURL %></h2>
+    <h2>TinyURL for <%= url.longURL %></h2>
     <h2>ShortURL: <%= shortURL %></h2>
     <form action="/urls/<%= shortURL %>?_method=PUT" method="POST">
-      <input class="form-control" name="longURL" type="text" value="<%= longURL %>" style="width: 300px">
+      <input class="form-control" name="longURL" type="text" value="<%= url.longURL %>" style="width: 300px">
       <button>Update</button>
+      <br>
+      Created: <%= url.created %>
+      <br>
+      Total Visits: <%= url.visits %>
+      <br>
+      Unique Visits: <%= Object.keys(url.visitors).length + (url.visitors["Anonymous"].length || 0) - 1 %>
+      <br>
+      <% for (let visitor in url.visitors) { %>
+        <% if (url.visitors[visitor].length) { %>
+          <%= visitor %> <%= url.visitors[visitor] %>
+        <% }%>
+      <% }%>
     </form>
   </body>
 </html>

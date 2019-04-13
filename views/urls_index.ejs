@@ -12,13 +12,19 @@
     <a href='/urls/new'>Create new TinyURL</a>
     <h2>My URLs</h2>
     <ul>
-      <% for (var url in urls) { %>
+      <% for (let url in urls) { %>
         <form method="POST" action="/urls/<%= url %>?_method=DELETE">
           <li>
             <%= url %>:
-            <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
+            <a href="/u/<%= url %>"><%= urls[url].longURL %></a>
             <a href="/urls/<%= url %>">Edit</a>
             <button>Delete</button>
+            <br>
+            Created: <%= urls[url].created %>
+            <br>
+            Total Visits: <%= urls[url].visits %>
+            <br>
+            Unique Visits: <%= Object.keys(urls[url].visitors).length + (urls[url].visitors["Anonymous"].length || 0) - 1 %>
           </li>
         </form>
       <% }%>
