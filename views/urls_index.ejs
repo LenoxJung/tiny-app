@@ -9,7 +9,6 @@
   </head>
   <body style="font-size:20px; padding:50px;">
     <% include partials/_header %>
-    <a href='/urls/new'>Create new TinyURL</a>
     <h2>My URLs</h2>
     <ul>
       <% for (let url in urls) { %>
@@ -17,8 +16,9 @@
           <li>
             <%= url %>:
             <a href="/u/<%= url %>"><%= urls[url].longURL %></a>
+            <br>
             <a href="/urls/<%= url %>">Edit</a>
-            <button>Delete</button>
+            <button class="btn btn-primary">Delete</button>
             <br>
             Created: <%= urls[url].created %>
             <br>

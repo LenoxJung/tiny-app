@@ -16,10 +16,10 @@ app.use(cookieSession({
 }));
 
 const urlDatabase = {
-  "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "userRandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
-  "9sm5xB": { longURL: "https://www.google.com", userID: "user2RandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
-  "b6UTxQ": { longURL: "https://www.tsn.ca", userID: "user2RandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 },
-  "i3BoGr": { longURL: "https://www.google.ca", userID: "userRandomID", created: Date.now(), visitors: { Anonymous: [] }, visits: 0 }
+  "b2xVn2": { longURL: "https://www.lighthouselabs.ca", userID: "userRandomID", created: Date().substring(0, 24), visitors: { Anonymous: [] }, visits: 0 },
+  "9sm5xB": { longURL: "https://www.google.com", userID: "user2RandomID", created: Date().substring(0, 24), visitors: { Anonymous: [] }, visits: 0 },
+  "b6UTxQ": { longURL: "https://www.tsn.ca", userID: "user2RandomID", created: Date().substring(0, 24), visitors: { Anonymous: [] }, visits: 0 },
+  "i3BoGr": { longURL: "https://www.google.ca", userID: "userRandomID", created: Date().substring(0, 24), visitors: { Anonymous: [] }, visits: 0 }
 };
 
 const users = {
@@ -112,7 +112,7 @@ app.post("/urls", (req, res) => {
   if (!user) res.status(403).render("sessions_new", { message: "403 Forbidden" });
   else {
     const randomString = generateRandomString();
-    urlDatabase[randomString] = { longURL: req.body.longURL, userID: user.id, created: Date.now(), visitors: { Anonymous: [] }, visits: 0 };
+    urlDatabase[randomString] = { longURL: req.body.longURL, userID: user.id, created: Date().substring(0, 24), visitors: { Anonymous: [] }, visits: 0 };
     res.redirect(`/urls/${randomString}`);
   }
 });
@@ -140,7 +140,6 @@ app.put("/urls/:id", (req, res) => {
     urlDatabase[req.params.id].longURL = req.body.longURL;
     urlDatabase[req.params.id].visits = 0;
     urlDatabase[req.params.id].visitors = { Anonymous: [] };
-    urlDatabase[req.params.id].created = Date.now();
     //res.redirect(`/urls/${req.params.id}`);
     res.redirect("/urls");
   }
@@ -165,7 +164,7 @@ app.get("/u/:shortURL", (req, res) => {
   if (url) {
     url.visits++;
     if (!url.visitors[userID]) url.visitors[userID] = [];
-    url.visitors[userID].push(Date.now());
+    url.visitors[userID].push(Date().substring(0, 24));
     res.redirect(url.longURL);
   }
   else if (user) res.status(404).render("urls_index", { urls: urlsForUser(user.id), user: user, message: "404 Not Found."});

@@ -9,12 +9,11 @@
   </head>
   <body style="font-size:20px; padding:50px;">
     <% include partials/_header %>
-    <a href='/urls/new'>Create new TinyURL</a>
     <h2>TinyURL for <%= url.longURL %></h2>
     <h2>ShortURL: <%= shortURL %></h2>
     <form action="/urls/<%= shortURL %>?_method=PUT" method="POST">
       <input class="form-control" name="longURL" type="text" value="<%= url.longURL %>" style="width: 300px">
-      <button>Update</button>
+      <button class="btn btn-primary">Update</button>
       <br>
       Created: <%= url.created %>
       <br>
